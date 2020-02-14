@@ -4,6 +4,7 @@ import _ from "lodash";
 function setupGlobals(globalObject: any) {
   globalObject._ = _;
   setupConstants(globalObject);
+  stubPrototypes(globalObject);
 }
 
 /**
@@ -1594,5 +1595,57 @@ function setupConstants(globalObject: any) {
   });
 }
 
+/**
+ * Prevents errors when importing a module containing extensions to game objects' prototypes.
+ */
+function stubPrototypes(globalObject: any) {
+  [
+    "ConstructionSite",
+    "Creep",
+    "Deposit",
+    "Energy",
+    "Flag",
+    "Mineral",
+    "Nuke",
+    "OwnedStructure",
+    "PowerCreep",
+    "Resource",
+    "Room",
+    "RoomObject",
+    "RoomPosition",
+    "RoomVisual",
+    "Ruin",
+    "Source",
+    "Spawn",
+    "Store",
+    "Structure",
+    "StructureContainer",
+    "StructureController",
+    "StructureExtension",
+    "StructureExtractor",
+    "StructureFactory",
+    "StructureInvaderCore",
+    "StructureKeeperLair",
+    "StructureLab",
+    "StructureLink",
+    "StructureNuker",
+    "StructureObserver",
+    "StructurePortal",
+    "StructurePowerBank",
+    "StructurePowerSpawn",
+    "StructureRampart",
+    "StructureRoad",
+    "StructureSpawn",
+    "StructureStorage",
+    "StructureTerminal",
+    "StructureTower",
+    "StructureWall",
+    "Tombstone"
+  ].forEach(className => {
+    if (!globalObject[className]) {
+      globalObject[className] = { prototype: {} };
+    }
+  });
+}
 
 export default setupGlobals;

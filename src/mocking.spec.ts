@@ -120,7 +120,7 @@ describe('mockGlobal', () => {
     expect(() => Game.market.orders.someOrder.roomName).toThrow('Unexpected access to unmocked property "Game.market.orders.someOrder.roomName".');
   });
 
-  it('allows access to unmocked fields, when allowUndefinedAccess is set to true', () => {
+  it.skip('allows access to unmocked fields, when allowUndefinedAccess is set to true', () => {
     mockGlobal<Game>('Game', {
       market: {
         orders: {

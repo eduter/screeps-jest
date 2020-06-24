@@ -29,6 +29,8 @@ module.exports = {
   preset: 'ts-jest',
 
   // The test environment that will be used for testing
-  testEnvironment: "./src/TestEnvironment.js"
+  testEnvironment: "./src/TestEnvironment.js",
 
+  // The glob patterns Jest uses to detect test files
+  testMatch: ['**/*.spec.ts', '!**/node_modules/**'],
 };

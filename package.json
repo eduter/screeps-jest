@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Helper functions and environment for unit testing your Screeps code with Jest.",
   "main": "dist/index.js",
+  "peerDependencies": {
+    "jest": "<=26"
+  },
   "dependencies": {},
   "devDependencies": {
     "@types/jest": "^26.0.3",

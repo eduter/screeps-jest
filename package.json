@@ -3,16 +3,19 @@
   "version": "1.0.0",
   "description": "Helper functions and environment for unit testing your Screeps code with Jest.",
   "main": "dist/index.js",
+  "peerDependencies": {
+    "jest": "<=26"
+  },
   "dependencies": {},
   "devDependencies": {
-    "@types/jest": "^24.0.24",
+    "@types/jest": "^26.0.3",
     "@types/lodash": "^3",
     "@types/node": "^13.1.0",
     "@types/screeps": "^3.0.0",
-    "jest": "^24.9.0",
+    "jest": "^26.1.0",
     "lodash": "^3",
-    "ts-jest": "^24.2.0",
-    "typescript": "^3.7.4"
+    "ts-jest": "^26.1.1",
+    "typescript": "~3.8.3"
   },
   "scripts": {
     "build": "tsc",

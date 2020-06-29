@@ -50,7 +50,9 @@ const jestInternalStuff: Array<symbol | string | number> = [
   "$$typeof",
   "nodeType",
   "@@__IMMUTABLE_ITERABLE__@@",
-  "@@__IMMUTABLE_RECORD__@@"
+  "@@__IMMUTABLE_RECORD__@@",
+  "_isMockFunction",
+  "mockClear",
 ];
 
 /**
@@ -62,7 +64,8 @@ const jestInternalStuff: Array<symbol | string | number> = [
  */
 function mockGlobal<T extends object>(name: string, mockedProps: DeepPartial<T> = {}, allowUndefinedAccess: boolean = false) {
   const g = global as any;
-  g[name] = createMock<T>(mockedProps, allowUndefinedAccess, name);
+  const finalMockedProps = {...mockedProps, mockClear: () => {}};
+  g[name] = createMock<T>(finalMockedProps, allowUndefinedAccess, name);
 }
 
 /**

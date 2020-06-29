@@ -22,7 +22,9 @@ const jestInternalStuff = [
     "$$typeof",
     "nodeType",
     "@@__IMMUTABLE_ITERABLE__@@",
-    "@@__IMMUTABLE_RECORD__@@"
+    "@@__IMMUTABLE_RECORD__@@",
+    "_isMockFunction",
+    "mockClear",
 ];
 /**
  * Mocks a global object instance, like Game or Memory.
@@ -33,7 +35,8 @@ const jestInternalStuff = [
  */
 function mockGlobal(name, mockedProps = {}, allowUndefinedAccess = false) {
     const g = global;
-    g[name] = createMock(mockedProps, allowUndefinedAccess, name);
+    const finalMockedProps = { ...mockedProps, mockClear: () => { } };
+    g[name] = createMock(finalMockedProps, allowUndefinedAccess, name);
 }
 exports.mockGlobal = mockGlobal;
 /**
@@ -92,7 +95,7 @@ const structureCounters = {};
  */
 function mockStructure(structureType, mockedProps = {}) {
     var _a;
-    const count = (_a = structureCounters[structureType], (_a !== null && _a !== void 0 ? _a : 0)) + 1;
+    const count = ((_a = structureCounters[structureType]) !== null && _a !== void 0 ? _a : 0) + 1;
     structureCounters[structureType] = count;
     return mockInstanceOf({
         id: `${structureType}${count}`,

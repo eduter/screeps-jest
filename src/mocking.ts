@@ -133,14 +133,12 @@ function mockStructure<T extends StructureConstant>(structureType: T, mockedProp
   const count = (structureCounters[structureType] ?? 0) + 1;
 
   structureCounters[structureType] = count;
+  const id = `${structureType}${count}` as Id<ConcreteStructure<T>>;
   return mockInstanceOf<ConcreteStructure<T>>({
-    id: `${structureType}${count}` as Id<ConcreteStructure<T>>,
-    structureType: structureType as any,
+    id,
+    structureType,
     toJSON() {
-      return {
-        id: this.id,
-        structureType: this.structureType
-      };
+      return {id, structureType,};
     },
     ...mockedProps
   });

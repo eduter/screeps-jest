@@ -97,14 +97,12 @@ function mockStructure(structureType, mockedProps = {}) {
     var _a;
     const count = ((_a = structureCounters[structureType]) !== null && _a !== void 0 ? _a : 0) + 1;
     structureCounters[structureType] = count;
+    const id = `${structureType}${count}`;
     return mockInstanceOf({
-        id: `${structureType}${count}`,
-        structureType: structureType,
+        id,
+        structureType,
         toJSON() {
-            return {
-                id: this.id,
-                structureType: this.structureType
-            };
+            return { id, structureType, };
         },
         ...mockedProps
     });

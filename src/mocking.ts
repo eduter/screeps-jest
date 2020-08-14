@@ -138,7 +138,7 @@ function mockStructure<T extends StructureConstant>(structureType: T, mockedProp
     id,
     structureType,
     toJSON() {
-      return {id, structureType,};
+      return { id, structureType };
     },
     ...mockedProps
   });

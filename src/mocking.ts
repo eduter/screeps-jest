@@ -53,6 +53,8 @@ const jestInternalStuff: Array<symbol | string | number> = [
   "@@__IMMUTABLE_RECORD__@@",
   "_isMockFunction",
   "mockClear",
+  "tagName",
+  "hasAttribute",
 ];
 
 /**

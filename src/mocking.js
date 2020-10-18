@@ -38,6 +38,8 @@ const jestInternalStuff = [
     "@@__IMMUTABLE_RECORD__@@",
     "_isMockFunction",
     "mockClear",
+    "tagName",
+    "hasAttribute",
 ];
 /**
  * Mocks a global object instance, like Game or Memory.

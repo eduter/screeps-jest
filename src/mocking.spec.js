@@ -34,6 +34,10 @@ describe('mockInstanceOf', () => {
         expect((_a = mockCreep.room.controller) === null || _a === void 0 ? void 0 : _a.owner.username).toEqual('some-user');
         expect(mockCreep.build(mocking_1.mockInstanceOf())).toEqual(OK);
     });
+    it('allows mocking constants', () => {
+        const mockSpawning = mocking_1.mockInstanceOf({ directions: [TOP] });
+        expect(mockSpawning.directions).toEqual([TOP]);
+    });
     it('throws if you access an unmocked field of a deep partial mock', () => {
         const mockCreep = mocking_1.mockInstanceOf({
             body: [

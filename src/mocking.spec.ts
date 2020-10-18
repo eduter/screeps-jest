@@ -36,6 +36,11 @@ describe('mockInstanceOf', () => {
     expect(mockCreep.build(mockInstanceOf<ConstructionSite>())).toEqual(OK);
   });
 
+  it('allows mocking constants', () => {
+    const mockSpawning = mockInstanceOf<Spawning>({ directions: [TOP] })
+    expect(mockSpawning.directions).toEqual([TOP])
+  })
+
   it('throws if you access an unmocked field of a deep partial mock', () => {
     const mockCreep = mockInstanceOf<Creep>({
       body: [

@@ -6,7 +6,9 @@ import jestMock from "jest-mock";
  * Generic type for partial implementations of interfaces.
  */
 type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends Array<infer U> ? Array<DeepPartial<U>> :
+  [P in keyof T]?: T[P] extends Array<string> ? Array<string> :
+                   T[P] extends Array<number> ? Array<number> :
+                   T[P] extends Array<infer U> ? Array<DeepPartial<U>> :
                    T[P] extends Id<infer V> ? Id<V> :
                    T[P] extends (object | undefined) ? DeepPartial<T[P]> :
                    T[P];
@@ -80,13 +82,17 @@ function mockInstanceOf<T extends object>(mockedProps: DeepPartial<T> = {}, allo
   return createMock(mockedProps, allowUndefinedAccess, '');
 }
 
+function isConstant(element: unknown) {
+  return typeof element === 'string' || typeof element === 'number'
+}
+
 function createMock<T extends object>(mockedProps: DeepPartial<T>, allowUndefinedAccess: boolean, path: string): T {
   const target: DeepPartial<T> = {};
 
   Object.entries(mockedProps).forEach(([propName, mockedValue]) => {
     target[propName as keyof T] =
       typeof mockedValue === 'function' ? jestMock.fn(mockedValue)
-        : Array.isArray(mockedValue) ? mockedValue.map((element, index) => createMock(element, allowUndefinedAccess, concatenatePath(path, `${propName}[${index}]`)))
+        : Array.isArray(mockedValue) ? mockedValue.map((element, index) => isConstant(element) ? element : createMock(element, allowUndefinedAccess, concatenatePath(path, `${propName}[${index}]`)))
         : typeof mockedValue === 'object' && shouldMockObject(mockedValue) ? createMock(mockedValue, allowUndefinedAccess, concatenatePath(path, propName))
         : mockedValue;
   });

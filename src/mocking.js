@@ -64,12 +64,15 @@ function mockInstanceOf(mockedProps = {}, allowUndefinedAccess = false) {
     return createMock(mockedProps, allowUndefinedAccess, '');
 }
 exports.mockInstanceOf = mockInstanceOf;
+function isConstant(element) {
+    return typeof element === 'string' || typeof element === 'number';
+}
 function createMock(mockedProps, allowUndefinedAccess, path) {
     const target = {};
     Object.entries(mockedProps).forEach(([propName, mockedValue]) => {
         target[propName] =
             typeof mockedValue === 'function' ? jest_mock_1.default.fn(mockedValue)
-                : Array.isArray(mockedValue) ? mockedValue.map((element, index) => createMock(element, allowUndefinedAccess, concatenatePath(path, `${propName}[${index}]`)))
+                : Array.isArray(mockedValue) ? mockedValue.map((element, index) => isConstant(element) ? element : createMock(element, allowUndefinedAccess, concatenatePath(path, `${propName}[${index}]`)))
                     : typeof mockedValue === 'object' && shouldMockObject(mockedValue) ? createMock(mockedValue, allowUndefinedAccess, concatenatePath(path, propName))
                         : mockedValue;
     });

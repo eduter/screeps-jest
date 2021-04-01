@@ -1,18 +1,25 @@
 import * as util from "util";
 import jestMock from "jest-mock";
+import { Path, pathToString } from "./pathToString";
 
 
 /**
  * Generic type for partial implementations of interfaces.
  */
-type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends Array<string> ? Array<string> :
-                   T[P] extends Array<number> ? Array<number> :
-                   T[P] extends Array<infer U> ? Array<DeepPartial<U>> :
-                   T[P] extends Id<infer V> ? Id<V> :
-                   T[P] extends (object | undefined) ? DeepPartial<T[P]> :
-                   T[P];
-} & { [key: string]: any };
+type DeepPartialObject<T extends object> = {
+  [P in keyof T]?: DeepPartial<T[P]>
+} & { [key: string]: any }
+
+type DeepPartial<T> =
+  T extends Array<infer U> ? Array<DeepPartial<U>> :
+    T extends AnyObj ? (
+      T extends boolean ? boolean : // \
+      T extends number ? number :   //   > No type assertion needed to mock a tagged primitive
+      T extends string ? string :   // /
+        DeepPartialObject<T>
+      ) : T
+
+type AnyObj = Record<string, any>
 
 /**
  * Conditional type for all concrete implementations of Structure.
@@ -66,10 +73,10 @@ const jestInternalStuff: Array<symbol | string | number> = [
  * @param mockedProps - the properties you need to mock for your test
  * @param allowUndefinedAccess - if false, accessing a property not present in mockProps, will throw an exception
  */
-function mockGlobal<T extends object>(name: string, mockedProps: DeepPartial<T> = {}, allowUndefinedAccess: boolean = false) {
+function mockGlobal<T extends object>(name: string, mockedProps: DeepPartialObject<T> = {}, allowUndefinedAccess: boolean = false) {
   const g = global as any;
   const finalMockedProps = {...mockedProps, mockClear: () => {}};
-  g[name] = createMock<T>(finalMockedProps, allowUndefinedAccess, name);
+  g[name] = createMock<T>(finalMockedProps, allowUndefinedAccess, [name]);
 }
 
 /**
@@ -78,39 +85,38 @@ function mockGlobal<T extends object>(name: string, mockedProps: DeepPartial<T> 
  * @param mockedProps - the properties you need to mock for your test
  * @param allowUndefinedAccess - if false, accessing a property not present in mockProps, will throw an exception
  */
-function mockInstanceOf<T extends object>(mockedProps: DeepPartial<T> = {}, allowUndefinedAccess: boolean = false): T {
-  return createMock(mockedProps, allowUndefinedAccess, '');
+function mockInstanceOf<T extends object>(mockedProps: DeepPartialObject<T> = {}, allowUndefinedAccess: boolean = false): T {
+  return createMock(mockedProps, allowUndefinedAccess, []);
 }
 
-function isConstant(element: unknown) {
-  return typeof element === 'string' || typeof element === 'number'
-}
+function createMock<T extends object>(mockedProps: DeepPartialObject<T>, allowUndefinedAccess: boolean, path: Path): T {
+  const target: DeepPartialObject<T> = {};
 
-function createMock<T extends object>(mockedProps: DeepPartial<T>, allowUndefinedAccess: boolean, path: string): T {
-  const target: DeepPartial<T> = {};
-
-  Object.entries(mockedProps).forEach(([propName, mockedValue]) => {
-    target[propName as keyof T] =
-      typeof mockedValue === 'function' ? jestMock.fn(mockedValue)
-        : Array.isArray(mockedValue) ? mockedValue.map((element, index) => isConstant(element) ? element : createMock(element, allowUndefinedAccess, concatenatePath(path, `${propName}[${index}]`)))
-        : typeof mockedValue === 'object' && shouldMockObject(mockedValue) ? createMock(mockedValue, allowUndefinedAccess, concatenatePath(path, propName))
-        : mockedValue;
-  });
-  return new Proxy<T>(target as T, {
-    get(t: T, p: PropertyKey): any {
-      if (p in target) {
-        return target[p.toString()];
-      } else if (!allowUndefinedAccess && !jestInternalStuff.includes(p)) {
-        throw new Error(
-          `Unexpected access to unmocked property "${concatenatePath(path, p.toString())}".\n` +
-          'Did you forget to mock it?\n' +
-          'If you intended for it to be undefined, you can explicitly set it to undefined (recommended) or set "allowUndefinedAccess" argument to true.'
-        );
-      } else {
-        return undefined;
+  if (typeof mockedProps === 'object' && mockedProps !== null) {
+    Object.entries(mockedProps).forEach(([propName, mockedValue]) => {
+      target[propName as keyof T] =
+        typeof mockedValue === 'function' ? jestMock.fn(mockedValue)
+          : Array.isArray(mockedValue) ? mockedValue.map((element, index) => createMock(element, allowUndefinedAccess, [...path, propName, index]))
+          : typeof mockedValue === 'object' && shouldMockObject(mockedValue) ? createMock(mockedValue, allowUndefinedAccess, [...path, propName])
+            : mockedValue;
+    });
+    return new Proxy<T>(target as T, {
+      get(t: T, p: PropertyKey): any {
+        if (p in target) {
+          return target[p.toString()];
+        } else if (!allowUndefinedAccess && !jestInternalStuff.includes(p)) {
+          throw new Error(
+            `Unexpected access to unmocked property "${pathToString([...path, p])}".\n` +
+            'Did you forget to mock it?\n' +
+            'If you intended for it to be undefined, you can explicitly set it to undefined (recommended) or set "allowUndefinedAccess" argument to true.'
+          );
+        } else {
+          return undefined;
+        }
       }
-    }
-  });
+    });
+  }
+  return mockedProps;
 }
 
 function shouldMockObject(value: object) {
@@ -119,10 +125,6 @@ function shouldMockObject(value: object) {
       && Object.getPrototypeOf(value) === Object.prototype
       && !util.types.isProxy(value)
   );
-}
-
-function concatenatePath(parentPath: string, propName: string) {
-  return parentPath ? `${parentPath}.${propName}` : propName;
 }
 
 /**
@@ -137,7 +139,7 @@ const structureCounters: { [key: string]: number } = {};
  * @param structureType
  * @param mockedProps - the additional properties you need to mock for your test
  */
-function mockStructure<T extends StructureConstant>(structureType: T, mockedProps: DeepPartial<ConcreteStructure<T>> = {}): ConcreteStructure<T> {
+function mockStructure<T extends StructureConstant>(structureType: T, mockedProps: DeepPartialObject<ConcreteStructure<T>> = {}): ConcreteStructure<T> {
   const count = (structureCounters[structureType] ?? 0) + 1;
 
   structureCounters[structureType] = count;

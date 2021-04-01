@@ -36,10 +36,127 @@ describe('mockInstanceOf', () => {
     expect(mockCreep.build(mockInstanceOf<ConstructionSite>())).toEqual(OK);
   });
 
-  it('allows mocking constants', () => {
-    const mockSpawning = mockInstanceOf<Spawning>({ directions: [TOP] })
-    expect(mockSpawning.directions).toEqual([TOP])
+  it('allows mocking complex interfaces', () => {
+    enum E {
+      A = 'a',
+      B = 'b'
+    }
+
+    type U = 'A' | 7
+
+    interface I {
+      strings: string[],
+      tuple: [E, U, boolean],
+      mixed: Array<number | I | I[]>
+      nested?: I
+    }
+
+    const mock = mockInstanceOf<I>({
+      strings: ['foo', 'bar'],
+      tuple: [E.A, 7, true],
+      mixed: [
+        3,
+        4,
+        {},
+        { strings: ['a'] },
+        [
+          { mixed: [] },
+          { strings: ['x', 'y', 'z'] }
+        ]
+      ],
+      nested: {
+        nested: {
+          nested: {
+            mixed: [{
+              tuple: [E.B, 'A', false]
+            }]
+          }
+        }
+      }
+    });
+    const nestedI = mock.nested?.nested?.nested?.mixed[0];
+
+    expect(typeof nestedI).toBe('object');
+    expect(Array.isArray(nestedI)).toBe(false);
+
+    if (typeof nestedI === 'object' && !Array.isArray(nestedI)) {
+      expect(nestedI.tuple[1]).toBe('A');
+    }
+
+    expect(() => (mock.mixed[4] as I[])[1].tuple).toThrow('Unexpected access to unmocked property "mixed[4][1].tuple"')
   })
+
+  it('removes tags / branding from primitive types', () => {
+    type TaggedString = string & { readonly _tag: unique symbol }
+    type TaggedNumber = number & { readonly _tag: unique symbol }
+    type TaggedBoolean = boolean & { readonly _tag: unique symbol }
+
+    type AppleId = number & { _type: 'Apple' }
+    type OrangeId = number & { _type: 'Orange' }
+
+    // @ts-expect-error
+    const appleId: AppleId = 1
+    // @ts-expect-error
+    const orangeId: OrangeId = 2
+
+    interface TaggedProperties {
+      taggedString: TaggedString;
+      taggedNumber: TaggedNumber;
+      taggedBoolean: TaggedBoolean;
+      appleId: AppleId;
+      orangeId: OrangeId;
+      creepId: Id<Creep>;
+    }
+
+    const mock = mockInstanceOf<TaggedProperties>({
+      appleId: 123,
+      orangeId: 123,
+      taggedString: 'tagged string 1',
+      taggedNumber: 1,
+      taggedBoolean: true,
+      creepId: 'some id'
+    })
+
+    // @ts-expect-error
+    if (mock.appleId === mock.orangeId) {
+    }
+  });
+
+  it('checks the types of mocked fields, even nested ones', () => {
+    mockInstanceOf<Creep>({
+      spawning: true,
+      room: {
+        controller: {
+          owner: {
+            username: 'Bob'
+          }
+        }
+      }
+    });
+    mockInstanceOf<Creep>({
+      // @ts-expect-error
+      spawning: {},
+      room: {
+        controller: {
+          owner: {
+            // @ts-expect-error
+            username: false
+          }
+        }
+      }
+    });
+    mockInstanceOf<StructureSpawn>({
+      spawning: {
+        directions: [TOP_LEFT, BOTTOM_RIGHT]
+      }
+    });
+    mockInstanceOf<StructureSpawn>({
+      spawning: {
+        // @ts-expect-error
+        directions: [TOP_LEFT, BOTTOM_RIGHT, 9]
+      }
+    });
+  });
 
   it('throws if you access an unmocked field of a deep partial mock', () => {
     const mockCreep = mockInstanceOf<Creep>({

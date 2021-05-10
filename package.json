@@ -13,7 +13,7 @@
     "@types/node": "^13.1.0",
     "@types/screeps": "^3.0.0",
     "jest": "^26.1.0",
-    "lodash": "^3",
+    "lodash": "^4",
     "ts-jest": "^26.1.1",
     "typescript": "^3.9.6"
   },

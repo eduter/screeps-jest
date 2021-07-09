@@ -5,6 +5,7 @@
     "declaration": true,                      /* Generates corresponding '.d.ts' file. */
     "strict": true,                           /* Enable all strict type-checking options. */
     "esModuleInterop": true,                  /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */
-    "forceConsistentCasingInFileNames": true  /* Disallow inconsistently-cased references to the same file. */
+    "forceConsistentCasingInFileNames": true, /* Disallow inconsistently-cased references to the same file. */
+    "importHelpers": true,                    /* Import emit helpers (e.g. '__extends', etc) from tslib. Emit smaller bundle. */
   }
 }

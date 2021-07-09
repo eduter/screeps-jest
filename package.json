@@ -6,7 +6,9 @@
   "peerDependencies": {
     "jest": "<=26"
   },
-  "dependencies": {},
+  "dependencies": {
+    "tslib": "^2.0.0"
+  },
   "devDependencies": {
     "@types/jest": "^26.0.3",
     "@types/lodash": "^3",

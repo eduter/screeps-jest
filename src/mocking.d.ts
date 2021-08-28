@@ -2,11 +2,13 @@
 /**
  * Generic type for partial implementations of interfaces.
  */
-declare type DeepPartial<T> = {
-    [P in keyof T]?: T[P] extends Array<string> ? Array<string> : T[P] extends Array<number> ? Array<number> : T[P] extends Array<infer U> ? Array<DeepPartial<U>> : T[P] extends Id<infer V> ? Id<V> : T[P] extends (object | undefined) ? DeepPartial<T[P]> : T[P];
+declare type DeepPartialObject<T extends object> = {
+    [P in keyof T]?: DeepPartial<T[P]>;
 } & {
     [key: string]: any;
 };
+declare type DeepPartial<T> = T extends Array<infer U> ? Array<DeepPartial<U>> : T extends AnyObj ? (T extends boolean ? boolean : T extends number ? number : T extends string ? string : DeepPartialObject<T>) : T;
+declare type AnyObj = Record<string, any>;
 /**
  * Conditional type for all concrete implementations of Structure.
  * Unlike Structure<T>, ConcreteStructure<T> gives you the actual concrete class that extends Structure<T>.
@@ -19,14 +21,14 @@ declare type ConcreteStructure<T extends StructureConstant> = T extends STRUCTUR
  * @param mockedProps - the properties you need to mock for your test
  * @param allowUndefinedAccess - if false, accessing a property not present in mockProps, will throw an exception
  */
-declare function mockGlobal<T extends object>(name: string, mockedProps?: DeepPartial<T>, allowUndefinedAccess?: boolean): void;
+declare function mockGlobal<T extends object>(name: string, mockedProps?: DeepPartialObject<T>, allowUndefinedAccess?: boolean): void;
 /**
  * Creates a mock instance of a class/interface.
  *
  * @param mockedProps - the properties you need to mock for your test
  * @param allowUndefinedAccess - if false, accessing a property not present in mockProps, will throw an exception
  */
-declare function mockInstanceOf<T extends object>(mockedProps?: DeepPartial<T>, allowUndefinedAccess?: boolean): T;
+declare function mockInstanceOf<T extends object>(mockedProps?: DeepPartialObject<T>, allowUndefinedAccess?: boolean): T;
 /**
  * Creates a mock instance of a structure, with a unique ID, structure type and toJSON.
  * The unique IDs allow Jest's matcher (deep equality) to tell them apart.
@@ -34,7 +36,7 @@ declare function mockInstanceOf<T extends object>(mockedProps?: DeepPartial<T>, 
  * @param structureType
  * @param mockedProps - the additional properties you need to mock for your test
  */
-declare function mockStructure<T extends StructureConstant>(structureType: T, mockedProps?: DeepPartial<ConcreteStructure<T>>): ConcreteStructure<T>;
+declare function mockStructure<T extends StructureConstant>(structureType: T, mockedProps?: DeepPartialObject<ConcreteStructure<T>>): ConcreteStructure<T>;
 /**
  * Call this once before running tests that create new instances of RoomPosition.
  */

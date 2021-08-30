@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "description": "Helper functions and environment for unit testing your Screeps code with Jest.",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "peerDependencies": {
     "jest": ">=27"
   },

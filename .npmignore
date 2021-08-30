@@ -1,0 +1,6 @@
+﻿# Ignore everything...
+/*
+# ...except what's in dist
+!/dist
+# ...but also ignore specs inside dist.
+/**/*.spec.*

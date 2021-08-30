@@ -1,6 +1,7 @@
 {
   "name": "screeps-jest",
   "version": "2.0.0",
+  "license": "MIT",
   "description": "Helper functions and environment for unit testing your Screeps code with Jest.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -33,5 +34,6 @@
   "bugs": {
     "url": "https://github.com/eduter/screeps-jest/issues"
   },
-  "homepage": "https://github.com/eduter/screeps-jest#readme"
+  "homepage": "https://github.com/eduter/screeps-jest#readme",
+  "keywords": ["screeps", "jest", "typescript", "mock", "mocking", "test", "testing"]
 }

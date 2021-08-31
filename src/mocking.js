@@ -18,13 +18,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mockStructure = exports.mockInstanceOf = exports.mockRoomPositionConstructor = exports.mockGlobal = void 0;
 const util = __importStar(require("util"));
-const jest_mock_1 = __importDefault(require("jest-mock"));
+const jestMock = __importStar(require("jest-mock"));
+const pathToString_1 = require("./pathToString");
 /**
  * Properties I've seen having been accessed internally by Jest's matchers and message formatters (there may be others).
  */
@@ -51,7 +49,7 @@ const jestInternalStuff = [
 function mockGlobal(name, mockedProps = {}, allowUndefinedAccess = false) {
     const g = global;
     const finalMockedProps = { ...mockedProps, mockClear: () => { } };
-    g[name] = createMock(finalMockedProps, allowUndefinedAccess, name);
+    g[name] = createMock(finalMockedProps, allowUndefinedAccess, [name]);
 }
 exports.mockGlobal = mockGlobal;
 /**
@@ -61,44 +59,41 @@ exports.mockGlobal = mockGlobal;
  * @param allowUndefinedAccess - if false, accessing a property not present in mockProps, will throw an exception
  */
 function mockInstanceOf(mockedProps = {}, allowUndefinedAccess = false) {
-    return createMock(mockedProps, allowUndefinedAccess, '');
+    return createMock(mockedProps, allowUndefinedAccess, []);
 }
 exports.mockInstanceOf = mockInstanceOf;
-function isConstant(element) {
-    return typeof element === 'string' || typeof element === 'number';
-}
 function createMock(mockedProps, allowUndefinedAccess, path) {
     const target = {};
-    Object.entries(mockedProps).forEach(([propName, mockedValue]) => {
-        target[propName] =
-            typeof mockedValue === 'function' ? jest_mock_1.default.fn(mockedValue)
-                : Array.isArray(mockedValue) ? mockedValue.map((element, index) => isConstant(element) ? element : createMock(element, allowUndefinedAccess, concatenatePath(path, `${propName}[${index}]`)))
-                    : typeof mockedValue === 'object' && shouldMockObject(mockedValue) ? createMock(mockedValue, allowUndefinedAccess, concatenatePath(path, propName))
-                        : mockedValue;
-    });
-    return new Proxy(target, {
-        get(t, p) {
-            if (p in target) {
-                return target[p.toString()];
+    if (typeof mockedProps === 'object' && mockedProps !== null) {
+        Object.entries(mockedProps).forEach(([propName, mockedValue]) => {
+            target[propName] =
+                typeof mockedValue === 'function' ? jestMock.fn(mockedValue)
+                    : Array.isArray(mockedValue) ? mockedValue.map((element, index) => createMock(element, allowUndefinedAccess, [...path, propName, index]))
+                        : typeof mockedValue === 'object' && shouldMockObject(mockedValue) ? createMock(mockedValue, allowUndefinedAccess, [...path, propName])
+                            : mockedValue;
+        });
+        return new Proxy(target, {
+            get(t, p) {
+                if (p in target) {
+                    return target[p.toString()];
+                }
+                else if (!allowUndefinedAccess && !jestInternalStuff.includes(p)) {
+                    throw new Error(`Unexpected access to unmocked property "${pathToString_1.pathToString([...path, p])}".\n` +
+                        'Did you forget to mock it?\n' +
+                        'If you intended for it to be undefined, you can explicitly set it to undefined (recommended) or set "allowUndefinedAccess" argument to true.');
+                }
+                else {
+                    return undefined;
+                }
             }
-            else if (!allowUndefinedAccess && !jestInternalStuff.includes(p)) {
-                throw new Error(`Unexpected access to unmocked property "${concatenatePath(path, p.toString())}".\n` +
-                    'Did you forget to mock it?\n' +
-                    'If you intended for it to be undefined, you can explicitly set it to undefined (recommended) or set "allowUndefinedAccess" argument to true.');
-            }
-            else {
-                return undefined;
-            }
-        }
-    });
+        });
+    }
+    return mockedProps;
 }
 function shouldMockObject(value) {
     return (value !== null
         && Object.getPrototypeOf(value) === Object.prototype
         && !util.types.isProxy(value));
-}
-function concatenatePath(parentPath, propName) {
-    return parentPath ? `${parentPath}.${propName}` : propName;
 }
 /**
  * Keeps counters for each structure type, to generate unique IDs for them.
@@ -130,7 +125,7 @@ exports.mockStructure = mockStructure;
  * Call this once before running tests that create new instances of RoomPosition.
  */
 function mockRoomPositionConstructor(globalObject) {
-    globalObject.RoomPosition = jest_mock_1.default.fn(mockRoomPosition);
+    globalObject.RoomPosition = jestMock.fn(mockRoomPosition);
 }
 exports.mockRoomPositionConstructor = mockRoomPositionConstructor;
 /**

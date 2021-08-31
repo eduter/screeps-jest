@@ -32,7 +32,7 @@ describe('mockInstanceOf', () => {
       build: () => OK
     });
     expect(mockCreep.body[1].type).toEqual(WORK);
-    expect(mockCreep.room.controller?.owner.username).toEqual('some-user');
+    expect(mockCreep.room.controller?.owner?.username).toEqual('some-user');
     expect(mockCreep.build(mockInstanceOf<ConstructionSite>())).toEqual(OK);
   });
 
@@ -288,7 +288,7 @@ describe('mockRoomPositionConstructor', () => {
     const roomName = 'W1N1';
 
     if ('RoomPosition' in global) {
-      delete global['RoomPosition'];
+      delete (global as any)['RoomPosition'];
     }
     expect(() => RoomPosition).toThrow('RoomPosition is not defined');
     mockRoomPositionConstructor(global);

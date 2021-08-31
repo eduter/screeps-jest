@@ -11,7 +11,7 @@ describe('mockInstanceOf', () => {
         expect(() => mockCreep.fatigue).toThrow('Unexpected access to unmocked property "fatigue".');
     });
     it('allows deep partial mocking of objects', () => {
-        var _a;
+        var _a, _b;
         const mockCreep = mocking_1.mockInstanceOf({
             body: [
                 {
@@ -31,12 +31,98 @@ describe('mockInstanceOf', () => {
             build: () => OK
         });
         expect(mockCreep.body[1].type).toEqual(WORK);
-        expect((_a = mockCreep.room.controller) === null || _a === void 0 ? void 0 : _a.owner.username).toEqual('some-user');
+        expect((_b = (_a = mockCreep.room.controller) === null || _a === void 0 ? void 0 : _a.owner) === null || _b === void 0 ? void 0 : _b.username).toEqual('some-user');
         expect(mockCreep.build(mocking_1.mockInstanceOf())).toEqual(OK);
     });
-    it('allows mocking constants', () => {
-        const mockSpawning = mocking_1.mockInstanceOf({ directions: [TOP] });
-        expect(mockSpawning.directions).toEqual([TOP]);
+    it('allows mocking complex interfaces', () => {
+        var _a, _b, _c;
+        let E;
+        (function (E) {
+            E["A"] = "a";
+            E["B"] = "b";
+        })(E || (E = {}));
+        const mock = mocking_1.mockInstanceOf({
+            strings: ['foo', 'bar'],
+            tuple: [E.A, 7, true],
+            mixed: [
+                3,
+                4,
+                {},
+                { strings: ['a'] },
+                [
+                    { mixed: [] },
+                    { strings: ['x', 'y', 'z'] }
+                ]
+            ],
+            nested: {
+                nested: {
+                    nested: {
+                        mixed: [{
+                                tuple: [E.B, 'A', false]
+                            }]
+                    }
+                }
+            }
+        });
+        const nestedI = (_c = (_b = (_a = mock.nested) === null || _a === void 0 ? void 0 : _a.nested) === null || _b === void 0 ? void 0 : _b.nested) === null || _c === void 0 ? void 0 : _c.mixed[0];
+        expect(typeof nestedI).toBe('object');
+        expect(Array.isArray(nestedI)).toBe(false);
+        if (typeof nestedI === 'object' && !Array.isArray(nestedI)) {
+            expect(nestedI.tuple[1]).toBe('A');
+        }
+        expect(() => mock.mixed[4][1].tuple).toThrow('Unexpected access to unmocked property "mixed[4][1].tuple"');
+    });
+    it('removes tags / branding from primitive types', () => {
+        // @ts-expect-error
+        const appleId = 1;
+        // @ts-expect-error
+        const orangeId = 2;
+        const mock = mocking_1.mockInstanceOf({
+            appleId: 123,
+            orangeId: 123,
+            taggedString: 'tagged string 1',
+            taggedNumber: 1,
+            taggedBoolean: true,
+            creepId: 'some id'
+        });
+        // @ts-expect-error
+        if (mock.appleId === mock.orangeId) {
+        }
+    });
+    it('checks the types of mocked fields, even nested ones', () => {
+        mocking_1.mockInstanceOf({
+            spawning: true,
+            room: {
+                controller: {
+                    owner: {
+                        username: 'Bob'
+                    }
+                }
+            }
+        });
+        mocking_1.mockInstanceOf({
+            // @ts-expect-error
+            spawning: {},
+            room: {
+                controller: {
+                    owner: {
+                        // @ts-expect-error
+                        username: false
+                    }
+                }
+            }
+        });
+        mocking_1.mockInstanceOf({
+            spawning: {
+                directions: [TOP_LEFT, BOTTOM_RIGHT]
+            }
+        });
+        mocking_1.mockInstanceOf({
+            spawning: {
+                // @ts-expect-error
+                directions: [TOP_LEFT, BOTTOM_RIGHT, 9]
+            }
+        });
     });
     it('throws if you access an unmocked field of a deep partial mock', () => {
         const mockCreep = mocking_1.mockInstanceOf({

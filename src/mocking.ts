@@ -1,5 +1,5 @@
 import * as util from "util";
-import jestMock from "jest-mock";
+import * as jestMock from "jest-mock";
 import { Path, pathToString } from "./pathToString";
 
 

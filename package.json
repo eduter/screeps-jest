@@ -1,6 +1,6 @@
 {
   "name": "screeps-jest",
-  "version": "2.0.0",
+  "version": "0.0.0-development",
   "license": "MIT",
   "description": "Helper functions and environment for unit testing your Screeps code with Jest.",
   "main": "dist/index.js",
@@ -17,14 +17,16 @@
     "jest": "^27.1.0",
     "lodash": "^3",
     "ts-jest": "^27.0.5",
-    "typescript": "^3.9.6"
+    "typescript": "^3.9.6",
+    "semantic-release": "^17.4.7"
   },
   "scripts": {
     "build": "tsc",
     "test": "jest",
     "test-watch": "jest --watch",
     "test-cov": "jest --coverage",
-    "test-only": "bash -c 'jest --watch --coverage --verbose --collectCoverageFrom=\"**/*$1*\" $1' -- "
+    "test-only": "bash -c 'jest --watch --coverage --verbose --collectCoverageFrom=\"**/*$1*\" $1' -- ",
+    "semantic-release": "semantic-release"
   },
   "repository": {
     "type": "git",

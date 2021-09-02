@@ -390,6 +390,11 @@ function setupConstants(globalObject: any) {
     FLAGS_LIMIT: 10000,
 
     SUBSCRIPTION_TOKEN: "token",
+    CPU_UNLOCK: "cpuUnlock",
+    PIXEL: "pixel",
+    ACCESS_KEY: "accessKey",
+
+    PIXEL_CPU_COST: 10000,
 
     RESOURCE_ENERGY: "energy",
     RESOURCE_POWER: "power",
@@ -854,7 +859,7 @@ function setupConstants(globalObject: any) {
     INVADER_CORE_EXPAND_TIME: { 1: 4000, 2: 3500, 3: 3000, 4: 2500, 5: 2000 },
     INVADER_CORE_CONTROLLER_POWER: 2,
     INVADER_CORE_CONTROLLER_DOWNGRADE: 5000,
-    STRONGHOLD_RAMPART_HITS: { 0: 0, 1: 50000, 2: 200000, 3: 500000, 4: 1000000, 5: 2000000 },
+    STRONGHOLD_RAMPART_HITS: { 0: 0, 1: 100000, 2: 200000, 3: 500000, 4: 1000000, 5: 2000000 },
     STRONGHOLD_DECAY_TICKS: 75000
   });
   Object.assign(globalObject, {
@@ -1143,7 +1148,10 @@ function setupConstants(globalObject: any) {
       globalObject.COLOR_WHITE
     ],
     INTERSHARD_RESOURCES: [
-      globalObject.SUBSCRIPTION_TOKEN
+      globalObject.SUBSCRIPTION_TOKEN,
+      globalObject.CPU_UNLOCK,
+      globalObject.PIXEL,
+      globalObject.ACCESS_KEY
     ],
     COMMODITIES: {
       [globalObject.RESOURCE_UTRIUM_BAR]: {

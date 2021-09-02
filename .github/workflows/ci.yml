@@ -10,8 +10,10 @@ on:
   workflow_dispatch:
 
 jobs:
+
   build:
-    runs-on: [ubuntu-latest]
+    name: Build
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -30,3 +32,25 @@ jobs:
       run: yarn build
     - name: Test
       run: yarn test
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/master' }}
+    needs: [ build ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+      - name: Install dependencies
+        run: yarn install
+      - name: Publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release

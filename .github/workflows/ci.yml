@@ -49,6 +49,8 @@ jobs:
           node-version: 16.x
       - name: Install dependencies
         run: yarn install
+      - name: Build
+        run: yarn build
       - name: Publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
